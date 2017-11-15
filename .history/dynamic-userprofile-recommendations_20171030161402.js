@@ -1,0 +1,40 @@
+const { MongoClient, ObjectID } = require('mongodb');
+const elasticsearch = require('elasticsearch');
+const Promise = require('bluebird');
+const client = new elasticsearch.Client({
+  host: '192.124.120.175:9200'
+});
+
+(async function () {
+  global.db1 = await MongoClient.connect('mongodb://lildev:lildev123@mongodb.dev-stack.f00dd7c8.svc.dockerapp.io:33258/lildev-db');
+  console.log('db1 connected', db1.databaseName);
+  getProminent();
+})();
+
+const results = {};
+async function getProminent() {
+  console.log('call fired');
+  const collectionUser = db1.collection('user');
+  const userIds = await collectionUser.find({}, { _id: true }).toArray();
+  console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> No of Users found :', userIds.length);
+  const collectionAndroid = db1.collection('ANDROID');
+  // for (const id of userIds) {
+    results = await collectionAndroid.aggregate(
+      { $match: { userId: "5767b4dec89f4d8c2118bdbe" } },
+      { $unwind: "$browsed" },
+      { $group: { _id: '$browsed.topic', count: { $sum: 1 } } }
+    ).sort({ count: -1 }).limit(3).toArray()
+  // }
+  console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Results for each user:', JSON.stringify(results, null, 2));
+  // const bulk = collectionUser.initializeOrderedBulkOp();
+  // // const condition;
+  // for (const id of userIds) {
+  //   const obj = { 'dynamicRecommendations': results[id._id] };
+  //   bulk.find({ _id: ObjectID(id._id) }).upsert().update({ $set: obj });
+  // }
+
+
+  // const toStore = await bulk.execute();
+  // console.log('////////////////////////////////////', toStore.isOk());
+
+}
