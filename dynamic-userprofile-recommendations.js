@@ -70,6 +70,7 @@ async function createEmailData() {
       },
       _source: ['thumbnail', 'title', 'course_type', 'description','id']
     }
+    // console.log('body??????????????????',body);
     toQuery.push(client.search({
       index: 'coursesindexer',
       type: 'coursesindexer',
